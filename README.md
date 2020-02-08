@@ -4,6 +4,19 @@
 
 This project provisions an MSK cluster. I need to add Terraform layers (a technique to separate big Terraform projects). Environments are to be complete, at the moment there is only on `dev` environment.
 
+### How to deploy
+First you need to create an environment with its remote state (an S3 bucket).
+First setup your AWS_PROFILE environment variable, then export a project and an
+`environ` variable which will hold the name of the terraform environment.
+Run `make create-state` from the root of the project to create a state.
+Check the Makefile to understand how to run the project but it is very similar
+to the basic Terraform commands:
+```
+make init
+make plan
+make apply
+```
+
 ### TODO
 * Documentation
 * Add layers
