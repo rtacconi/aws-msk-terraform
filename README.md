@@ -4,6 +4,9 @@
 
 This project provisions an MSK cluster. I need to add Terraform layers (a technique to separate big Terraform projects). Environments are to be completed, at the moment there is only one `dev` environment.
 
+### How to create the TF state
+AWS_DEFAULT_REGION=eu-west-1 AWS_PROFILE=ccipoc environ=dev project=cloudlib make create-state
+
 ### How to deploy
 First you need to create an environment with its remote state (an S3 bucket).
 First setup your AWS_PROFILE environment variable, then export a project and an

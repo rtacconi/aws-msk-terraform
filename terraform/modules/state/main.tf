@@ -1,7 +1,3 @@
-provider "aws" {
-  max_retries = 2 # this avoids Terraform to hang in case of wrong credentials
-}
-
 # Terraform state file setup.
 # Create an S3 bucket to store terraform state.
 resource "aws_s3_bucket" "terraform_state" {
@@ -12,7 +8,7 @@ resource "aws_s3_bucket" "terraform_state" {
   }
 
   lifecycle {
-    prevent_destroy = false
+    prevent_destroy = true
   }
 
   tags = {

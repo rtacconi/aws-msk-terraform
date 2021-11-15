@@ -1,6 +1,6 @@
-bucket = "testmsk-terraform-state"
+bucket = "msk-prod-terraform-state"
 
-key = "dev/terraform.tfstate"
+key = "prod/terraform.tfstate"
 
 session_name = "terraform"
 
