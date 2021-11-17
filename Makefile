@@ -1,4 +1,6 @@
+SHELL:=/bin/bash
 LAYERS=terraform/layers
+
 
 create-state: check-vars
 	cd terraform/00_state \
@@ -6,22 +8,36 @@ create-state: check-vars
 		&& terraform apply -auto-approve -var prefix="${project}-${environ}"
 
 init: check-vars
-	$(call tf_init,10_network)
-
-test2:
-	$(call tf_init,20_msk)
-	$(call tf_plan,20_msk)
-	$(call tf_apply,20_msk)
-	$(call tf_destroy,20_msk)
+ifdef layer
+	@echo 'layer is defined'
+	$(call tf_init,$$layer)
+else
+	@echo 'you must pass a layer, i.e.: make layer=10_network  init'
+endif
 
 plan: check-vars
-	$(call tf_plan,10_network)
+ifdef layer
+	@echo 'toto is defined'
+else
+	@echo 'you must pass a layer, i.e.: make layer=10_network  plan'
+endif
+	$(call tf_plan,$$layer)
 
 apply: check-vars
-	$(call tf_apply,10_network)
+ifdef layer
+	@echo 'toto is defined'
+else
+	@echo 'you must pass a layer, i.e.: make layer=10_network  apply'
+endif
+	$(call tf_apply,$$layer)
 
 destroy: check-vars
-	$(call tf_destroy,10_network)
+ifdef layer
+	@echo 'toto is defined'
+else
+	@echo 'you must pass a layer, i.e.: make layer=10_network destroy'
+endif
+	$(call tf_destroy,$$layer)
 
 check-vars:
 	echo "Checking if project is setup..."
@@ -35,7 +51,8 @@ define tf_init
 	cd terraform/layers/$(1)/environments/${environ} && rm -rf .terraform/ \
 		&& TF_DATA_DIR=$(shell pwd)/terraform/layers/$(1)/environments/${environ}/.terraform \
 			terraform -chdir=../.. init \
-			-backend=true -backend-config=$(shell pwd)/terraform/layers/$(1)/environments/${environ}/backend.tfvars
+			-backend=true \
+			-backend-config=$(shell pwd)/terraform/layers/$(1)/environments/${environ}/backend.generated.tfvars
 endef
 
 define tf_plan
@@ -62,8 +79,23 @@ define tf_destroy
 				-var-file=$(shell pwd)/terraform/layers/$(1)/environments/${environ}/terraform.tfvars
 endef
 
+
 apply_layers:
-	for d in $(shell ls ${LAYERS}); do \
-		echo $${d}; \
-		$(call tf_init,$${d}) \
+	# loop layers (excluding names starting with underscore)
+	for d in $(shell ls ${LAYERS}| grep -v ^_); do \
+	  echo running layer $${d}; \
+		cd $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST)))); \
+		$(call tf_init,$${d});    \
+		cd $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST)))); \
+		$(call tf_plan,$${d});    \
+		cd $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST)))); \
+		$(call tf_apply,$${d});   \
 	done
+
+create-backend:
+ifdef layer
+	@echo "creating backend for ${layer} layer, environment ${environ}"
+	@python main.py create-backend eu-west-1 $${project} $${environ} $${layer}
+else
+	@echo 'you must pass a layer, i.e.: make layer=10_network destroy'
+endif
