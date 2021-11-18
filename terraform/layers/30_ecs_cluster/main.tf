@@ -19,7 +19,7 @@ data "aws_route53_zone" "selected" {
 data "aws_caller_identity" "current" {}
 
 module "ecs_cluster_test" {
-  source         = "../../modules/ecs_cluster"
+  source         = "../../modules/ecs-cluster"
   aws_region     = local.aws_region
   aws_account_id = local.aws_account_id
   environment    = var.environment

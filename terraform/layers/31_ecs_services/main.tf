@@ -37,7 +37,7 @@ data "aws_route53_zone" "selected" {
 data "aws_caller_identity" "current" {}
 
 module "nginx_service_iam" {
-  source               = "../../modules/ecs_fargate_iam"
+  source               = "../../modules/ecs-fargate-iam"
   aws_region           = local.aws_region
   aws_account_id       = local.aws_account_id
   environment          = var.environment
