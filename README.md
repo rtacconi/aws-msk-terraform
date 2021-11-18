@@ -15,9 +15,9 @@ Run `make create-state` from the root of the project to create a Terraform remot
 Check the Makefile to understand how to run the project but it is very similar
 to the basic Terraform workflow:
 ```
-make init
-make plan
-make apply
+make init layer=10_network
+make plan layer=10_network
+make apply layer=10_network
 ```
 
 ### TODO
