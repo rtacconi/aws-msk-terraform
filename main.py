@@ -10,13 +10,13 @@ def create_backend():
     layers_list = layer.split('_')[1:]
     body = f'''bucket = "{project}-{environ}-terraform-state"
 key = "{environ}/{'-'.join(layers_list)}/terraform.tfstate"
-session_name = "terraform"
+session_name = "{'-'.join(layers_list)}"
 dynamodb_table = "msk-dev-terraform-state-lock"
 region = "{region}"
 encrypt = true'''
 
     try:
-        f = open(f"terraform/layers/{layer}/environments/{environ}/backend.generated.tfvars", "w")
+        f = open(f"terraform/layers/{layer}/environments/{environ}/backend.generated.tfvars", "w+")
         f.write(body)
         f.close()
     except FileNotFoundError:

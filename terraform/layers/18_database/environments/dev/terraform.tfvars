@@ -1,0 +1,2 @@
+environment = "dev"
+project     = "msk"

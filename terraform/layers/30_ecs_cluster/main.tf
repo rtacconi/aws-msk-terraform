@@ -26,11 +26,9 @@ module "ecs_cluster_test" {
   name_prefix    = local.prefix
 
   vpc_id         = data.terraform_remote_state.network.outputs.vpc.vpc_id
-  subnet_ids     = data.terraform_remote_state.network.outputs.vpc.public_subnets
+  subnet_ids     = data.terraform_remote_state.network.outputs.vpc.private_subnets
   dns_name       = "ecs.recursivelabs.cloud"
   zone_id        = data.aws_route53_zone.selected.zone_id
 
   tags   = local.common_tags
 }
-
-# data.terraform_remote_state.network.outputs.vpc.private_subnets
