@@ -51,6 +51,16 @@ provider "aws" {{
     )
     f.close()
 
+    empty_files = [
+        f"terraform/layers/{layer}/main.tf",
+        f"terraform/layers/{layer}/variables.tf",
+        f"terraform/layers/{layer}/outputs.tf",
+    ]
+    for file in empty_files:
+        f = open(file, "a")
+        f.write("")
+        f.close()
+
 
 def main():
     task = sys.argv[1]
