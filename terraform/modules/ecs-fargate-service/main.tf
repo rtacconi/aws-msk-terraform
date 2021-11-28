@@ -43,7 +43,7 @@ resource "aws_lb_listener" "alb_port_listener" {
 resource "aws_lb_listener_rule" "path_pattern" {
   count = length(var.path_pattern) > 0 ? 1 : 0
   listener_arn = var.listener_arn
-  priority     = 100
+  priority     = var.priority
 
   action {
     target_group_arn = aws_lb_target_group.target_group.arn

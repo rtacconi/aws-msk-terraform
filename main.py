@@ -4,49 +4,63 @@ from pathlib import Path
 import glob
 import re
 
-environ = 'dev'
-project = 'msk'
-region = 'eu-west-1'
-layer = '15_security'
+environ = "dev"
+project = "msk"
+region = "eu-west-1"
+layer = "15_security"
+
 
 def create_backend():
     environ = sys.argv[4]
     project = sys.argv[3]
     region = sys.argv[2]
     layer = sys.argv[5]
-    layers_list = layer.split('_')[1:]
-    body = f'''bucket = "{project}-{environ}-terraform-state"
+    layers_list = layer.split("_")[1:]
+    body = f"""bucket = "{project}-{environ}-terraform-state"
 key = "{environ}/{'-'.join(layers_list)}/terraform.tfstate"
 session_name = "{'-'.join(layers_list)}"
 dynamodb_table = "msk-dev-terraform-state-lock"
 region = "{region}"
-encrypt = true'''
+encrypt = true"""
 
     path = f"terraform/layers/{layer}/environments/{environ}"
     if not os.path.isdir(path):
         os.makedirs(path)
         f = open(f"{path}/terraform.tfvars", "w+")
-        f.write('')
+        f.write(
+            f'''environment = "{environ}"
+project = "{project}"'''
+        )
         f.close()
 
-    try:
-        f = open(f"{path}/backend.generated.tfvars", "w+")
-        f.write(body)
-        f.close()
-    except FileNotFoundError:
-        print('FileNotFoundError. Exiting.')
-        sys.exit(1)
+    f = open(f"{path}/backend.generated.tfvars", "w+")
+    f.write(body)
+    f.close()
+
+    path = f"terraform/layers/{layer}/terraform.tf"
+    f = open(path, "a")
+    f.write(
+        f"""terraform {{
+  required_version = "~> 1.0.6"
+  backend "s3" {{}}
+}}
+
+provider "aws" {{
+  region = "{region}"
+}}"""
+    )
+    f.close()
+
 
 def main():
     task = sys.argv[1]
 
-    if task == 'create-backend':
+    if task == "create-layer":
         create_backend()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-
 
 
 # [s for s in glob.glob(f"terraform/layers/*") if not re.match(r'^_', s.replace('terraform/layers/', ''))]

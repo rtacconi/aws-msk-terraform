@@ -93,6 +93,11 @@ variable "path_pattern" {
   default     = ""
 }
 
+variable "priority" {
+  description = "Priority of the listener rule"
+  type        = number
+}
+
 variable "listener_arn" {
   description = "Listener to attach the routing rule"
   type        = string

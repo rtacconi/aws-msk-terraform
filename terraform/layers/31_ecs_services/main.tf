@@ -16,7 +16,7 @@ data "terraform_remote_state" "network" {
   backend = "s3"
   config = {
     bucket = "msk-dev-terraform-state"
-    key    = "${var.environment}/terraform.tfstate"
+    key    = "${var.environment}/network/terraform.tfstate"
     region = local.aws_region
   }
 }
@@ -59,12 +59,12 @@ resource "aws_ecr_repository" "nginx" {
 
 module "service_nginx" {
   depends_on           = [aws_ecr_repository.nginx]
-  source               = "../../modules/ecs_fargate_service"
+  source               = "../../modules/ecs-fargate-service"
   environment          = var.environment
-  container_name       = "nginx-test-${var.environment}"
+  container_name       = "nginx-${var.environment}"
   cpu                  = 256
   memory               = 512
-  port                 = 80
+  port                 = 5000
   aws_region           = local.aws_region
   aws_account_id       = local.aws_account_id
   name_prefix          = local.prefix
@@ -73,17 +73,17 @@ module "service_nginx" {
   aws_lb_arn           = data.terraform_remote_state.ecs_cluster.outputs.ecs_cluster.aws_lb_arn
   ecs_cluster_id       = data.terraform_remote_state.ecs_cluster.outputs.ecs_cluster.ecs_cluster_id
   lb_security_group_id = data.terraform_remote_state.ecs_cluster.outputs.ecs_cluster.lb_aws_security_group_id
-  path_pattern         = "/demo-service"
+  path_pattern         = "/demo-servic*"
   listener_arn         = data.terraform_remote_state.ecs_cluster.outputs.ecs_cluster.aws_lb_listener_arn
   execution_role_arn   = module.nginx_service_iam.execution_role_arn
   iam_role_arn         = module.nginx_service_iam.iam_role_arn
   health_check_path    = "/"
-  listner_priority     = 100
+  priority             = 100
 
   container_definitions = jsonencode([
     {
-      "name": "nginx-test-${var.environment}",
-      "image": aws_ecr_repository.nginx.name,
+      "name": "nginx-${var.environment}",
+      "image": "${aws_ecr_repository.nginx.repository_url}:0.0.4",
       "cpu": 256,
       "memory": 512,
       "essential": true,
@@ -96,11 +96,17 @@ module "service_nginx" {
           "awslogs-stream-prefix": "ecs"
         }
       },
+      "environment": [
+        # {
+        #   "name": "APPLICATION_ROOT",
+        #   "value": "/"
+        # }
+      ],
       "portMappings": [
         {
-          "containerPort": 80,
+          "containerPort": 5000,
           "protocol": "tcp",
-          "hostPort": 80
+          "hostPort": 5000
         }
       ]
     }

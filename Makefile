@@ -92,10 +92,10 @@ apply_layers:
 		$(call tf_apply,$${d});   \
 	done
 
-create-backend:
+create-layer:
 ifdef layer
 	@echo "creating backend for ${layer} layer, environment ${environ}"
-	@python main.py create-backend eu-west-1 $${project} $${environ} $${layer}
+	@python main.py create-layer eu-west-1 $${project} $${environ} $${layer}
 else
 	@echo 'you must pass a layer, i.e.: make layer=10_network destroy'
 endif
