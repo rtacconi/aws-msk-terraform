@@ -1,13 +1,19 @@
 FROM python:3
 
+RUN curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64
+RUN chmod +x /usr/local/bin/dbmate
+
+
 WORKDIR /usr/src/app
 
-COPY requirements.txt ./
+COPY . .
+RUN rm -rf .env
 RUN pip install --no-cache-dir -r requirements.txt
-ENV FLASK_APP=hello
 
-COPY ./hello.py .
+# COPY ./hello.py .
+# COPY ./entrypoint.sh .
+RUN chmod +x ./entrypoint.sh
 
 EXPOSE 5000
 
-CMD [ "flask", "run", "--host=0.0.0.0" ]
+ENTRYPOINT [ "./entrypoint.sh" ]

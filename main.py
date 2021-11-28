@@ -51,6 +51,16 @@ provider "aws" {{
     )
     f.close()
 
+    # Add this to variables.tf
+    # variable environment {
+    #   type        = string
+    #   description = "The name of the environment"
+    # }
+    #
+    # variable project {
+    #   type        = string
+    #   description = "The name of the project"
+    # }
     empty_files = [
         f"terraform/layers/{layer}/main.tf",
         f"terraform/layers/{layer}/variables.tf",
@@ -71,6 +81,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-# [s for s in glob.glob(f"terraform/layers/*") if not re.match(r'^_', s.replace('terraform/layers/', ''))]

@@ -2,6 +2,7 @@ locals {
   prefix = "${var.project}-${var.environment}"
   aws_region = "eu-west-1"
   aws_account_id = data.aws_caller_identity.current.account_id
+  app_secrets = data.terraform_remote_state.secrets.outputs.application.id
   common_tags = {
     project     = var.project
     environment = var.environment
@@ -10,24 +11,6 @@ locals {
 
 data "aws_availability_zones" "azs" {
   state = "available"
-}
-
-data "terraform_remote_state" "network" {
-  backend = "s3"
-  config = {
-    bucket = "msk-dev-terraform-state"
-    key    = "${var.environment}/network/terraform.tfstate"
-    region = local.aws_region
-  }
-}
-
-data "terraform_remote_state" "ecs_cluster" {
-  backend = "s3"
-  config = {
-    bucket = "msk-dev-terraform-state"
-    key    = "${var.environment}/ecs-cluster/terraform.tfstate"
-    region = local.aws_region
-  }
 }
 
 data "aws_route53_zone" "selected" {
@@ -77,13 +60,13 @@ module "service_nginx" {
   listener_arn         = data.terraform_remote_state.ecs_cluster.outputs.ecs_cluster.aws_lb_listener_arn
   execution_role_arn   = module.nginx_service_iam.execution_role_arn
   iam_role_arn         = module.nginx_service_iam.iam_role_arn
-  health_check_path    = "/"
+  health_check_path    = "/demo-service"
   priority             = 100
 
   container_definitions = jsonencode([
     {
       "name": "nginx-${var.environment}",
-      "image": "${aws_ecr_repository.nginx.repository_url}:0.0.4",
+      "image": "${aws_ecr_repository.nginx.repository_url}:0.0.8",
       "cpu": 256,
       "memory": 512,
       "essential": true,
@@ -100,7 +83,33 @@ module "service_nginx" {
         # {
         #   "name": "APPLICATION_ROOT",
         #   "value": "/"
+        # },
+        # {
+        #   "name": "DEBUG",
+        #   "value": "1"
         # }
+      ],
+      "secrets" : [
+        {
+          "valueFrom" : "${local.app_secrets}:database_name::",
+          "name" : "database_name"
+        },
+        {
+          "valueFrom" : "${local.app_secrets}:database_password::",
+          "name" : "database_password"
+        },
+        {
+          "valueFrom" : "${local.app_secrets}:database_username::",
+          "name" : "database_username"
+        },
+        {
+          "valueFrom" : "${local.app_secrets}:cluster_port::",
+          "name" : "cluster_port"
+        },
+        {
+          "valueFrom" : "${local.app_secrets}:cluster_endpoint::",
+          "name" : "cluster_endpoint"
+        }
       ],
       "portMappings": [
         {

@@ -38,3 +38,11 @@ bootstrap_brokers_tls =
   b-2.example.opi5eg.c3.kafka.eu-west-1.amazonaws.com:9094
   b-3.example.opi5eg.c3.kafka.eu-west-1.amazonaws.com:9094
 zookeeper_connect_string = 192.168.0.160:2181,192.168.2.32:2181,192.168.1.30:2181
+
+## Notes
+
+docker run --name postgres -e POSTGRES_PASSWORD=secret -p 5432:5432 -d postgres
+
+2810  docker build -t nginx .
+2811  docker tag nginx:latest 250508885750.dkr.ecr.eu-west-1.amazonaws.com/nginx:0.0.1
+2812  docker push 250508885750.dkr.ecr.eu-west-1.amazonaws.com/nginx:0.0.1

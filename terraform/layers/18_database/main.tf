@@ -2,10 +2,12 @@ locals {
   prefix = "${var.project}-${var.environment}"
   aws_region = "eu-west-1"
   aws_account_id = data.aws_caller_identity.current.account_id
+  database_name = "flask"
   common_tags = {
     project     = var.project
     environment = var.environment
   }
+
 }
 
 data "aws_caller_identity" "current" {}
@@ -24,6 +26,8 @@ module "aurora_postgresql" {
   allowed_cidr_blocks   = data.terraform_remote_state.network.outputs.vpc.private_subnets_cidr_blocks
 
   monitoring_interval = 60
+
+  database_name = local.database_name
 
   apply_immediately   = true
   skip_final_snapshot = true
@@ -52,4 +56,17 @@ resource "aws_rds_cluster_parameter_group" "postgresql" {
   family      = "aurora-postgresql10"
   description = "${local.prefix}-aurora-postgres-cluster-parameter-group"
   tags        = local.common_tags
+}
+
+resource "aws_secretsmanager_secret_version" "application" {
+  secret_id     = data.terraform_remote_state.secrets.outputs.application.id
+  secret_string = jsonencode(
+    {
+      "database_name"           = local.database_name,
+      "database_username"       = module.aurora_postgresql.cluster_master_username,
+      "database_password"       = module.aurora_postgresql.cluster_master_password,
+      "cluster_port"            = module.aurora_postgresql.cluster_port,
+      "cluster_endpoint"        = module.aurora_postgresql.cluster_endpoint
+    }
+  )
 }
