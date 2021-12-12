@@ -15,6 +15,14 @@ else
 	@echo 'you must pass a layer, i.e.: make layer=10_network  init'
 endif
 
+lint: check-vars
+ifdef layer
+	@echo 'layer is defined'
+	$(call tf_lint,$$layer)
+else
+	@echo 'you must pass a layer, i.e.: make layer=10_network  init'
+endif
+
 plan: check-vars
 ifdef layer
 	@echo 'toto is defined'
@@ -44,8 +52,10 @@ check-vars:
 	@test ${project}
 	echo "Checking if environ is setup..."
 	@test ${environ}
-	echo "Checking if AWS_PROFILE is setup..."
-	@test ${AWS_PROFILE}
+	echo "Checking if AWS_REGION is setup..."
+	@test ${AWS_REGION}
+	echo "Checking if AWS_REGION is setup..."
+	@test ${AWS_REGION}
 
 define tf_init
 	cd terraform/layers/$(1)/environments/${environ} && rm -rf .terraform/ \
@@ -53,6 +63,12 @@ define tf_init
 			terraform -chdir=../.. init \
 			-backend=true \
 			-backend-config=$(shell pwd)/terraform/layers/$(1)/environments/${environ}/backend.generated.tfvars
+endef
+
+define tf_lint
+	cd terraform/layers/$(1)/environments/${environ}/ \
+		&& TF_DATA_DIR=$(shell pwd)/terraform/layers/$(1)/environments/${environ}/.terraform \
+			terraform -chdir=../.. validate
 endef
 
 define tf_plan
