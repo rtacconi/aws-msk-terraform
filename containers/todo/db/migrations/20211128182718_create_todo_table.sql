@@ -1,6 +1,6 @@
 -- migrate:up
 create table todos (
-  id integer,
+  id SERIAL PRIMARY KEY,
   name varchar(255) not null,
   done boolean not null
 );

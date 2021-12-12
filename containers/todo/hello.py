@@ -3,8 +3,6 @@ import sys
 from flask import Flask
 import logging
 import records
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 
 
 logger = logging.getLogger(__name__)
@@ -19,18 +17,19 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 # DSN = f"postgresql://{os.environ['DATABASE_USERNAME']}:{os.environ['DATABASE_PASSWORD']}@{os.environ['CLUSTER_ENDPOINT']}:{os.environ['CLUSTER_PORT']}/{os.environ['DATABASE_NAME']}"
-# db = records.Database(DSN)
-# logger.info(DSN)
+DSN = "postgresql://postgres:secret@192.168.1.192/postgres"
+db = records.Database(DSN)
+logger.info(DSN)
 app = Flask(__name__)
-app.config[
-    "SQLALCHEMY_DATABASE_URI"
-] = "postgresql://postgres:secret:192.168.1.192:5432/flask"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+rows = db.query("SELECT * from todos")
+
+for r in rows:
+    print(r.name)
 
 
 @app.route("/demo-service")
 def hello_world():
-    rows = db.query("SELECT 1")
-    return f"<p>Hello, Flask!</p><p>SELECT 1: {rows}</p>"
+    return f"""<h1>Hello, Flask!</h1>
+<ul>
+{[r for rows in r]}
+</ul>"""
