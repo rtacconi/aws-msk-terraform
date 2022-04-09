@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 import glob
 import re
+import boto3
 
 environ = "dev"
 project = "msk"
@@ -70,6 +71,22 @@ provider "aws" {{
         f = open(file, "a")
         f.write("")
         f.close()
+
+
+# def create_bucket()
+client = boto3.client('s3')
+bucket_name = 'riccardotacconitesting12345'
+client.create_bucket(Bucket=bucket_name)
+import boto3
+client = boto3.client('s3')
+response = client.put_bucket_encryption(
+    Bucket= bucket_name,
+    ContentMD5='string',
+    ServerSideEncryptionConfiguration={
+        'Rules': [{'ApplyServerSideEncryptionByDefault': {'SSEAlgorithm': 'AES256'}},]
+    }
+)
+
 
 
 def main():
